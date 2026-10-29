@@ -213,6 +213,15 @@ function approveMoneyRequest(params: ApproveMoneyRequestFunctionParams) {
               isTrackIntentUser,
           });
     const chatReport = getReportOrDraftReport(expenseReport.chatReportID);
+    const hasKnownUnheldTotals = expenseReport.unheldTotal !== undefined || expenseReport.unheldReimbursableTotal !== undefined || expenseReport.unheldNonReimbursableTotal !== undefined;
+    const shouldUpdateOriginalReportTotals = !full && hasHeldExpenses && (!chatReport || expenseReport.unheldTotal === undefined) && hasKnownUnheldTotals;
+    const partialApprovalReportTotals = shouldUpdateOriginalReportTotals
+        ? {
+              total: expenseReport.unheldTotal ?? unheldTotal,
+              nonReimbursableTotal: expenseReport.unheldNonReimbursableTotal ?? 0,
+              reimbursableTotal: getUnheldReimbursableTotal(expenseReport),
+          }
+        : {};
 
     const optimisticData: Array<
         OnyxUpdate<
@@ -239,6 +248,7 @@ function approveMoneyRequest(params: ApproveMoneyRequestFunctionParams) {
 
     const updatedExpenseReport = {
         ...expenseReport,
+        ...partialApprovalReportTotals,
         ...(shouldAddOptimisticApproveAction
             ? {
                   lastMessageText: getReportActionText(optimisticApprovedReportAction),
@@ -367,6 +377,19 @@ function approveMoneyRequest(params: ApproveMoneyRequestFunctionParams) {
                     partial: null,
                     nextStep: null,
                 },
+            },
+        });
+    }
+
+    // The hold flow updates these fields when the workspace chat is available. Keep this fallback for delegates whose local chat was removed after splitting an expense.
+    if (shouldUpdateOriginalReportTotals) {
+        failureData.push({
+            onyxMethod: Onyx.METHOD.MERGE,
+            key: `${ONYXKEYS.COLLECTION.REPORT}${expenseReport.reportID}`,
+            value: {
+                total: expenseReport.total,
+                nonReimbursableTotal: expenseReport.nonReimbursableTotal,
+                reimbursableTotal: expenseReport.reimbursableTotal,
             },
         });
     }

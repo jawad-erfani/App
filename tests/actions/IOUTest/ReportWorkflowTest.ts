@@ -5468,6 +5468,76 @@ describe('actions/IOU/ReportWorkflow', () => {
             expect(newExpenseReport?.stateNum).toBe(CONST.REPORT.STATE_NUM.SUBMITTED);
             expect(newExpenseReport?.statusNum).toBe(CONST.REPORT.STATUS_NUM.SUBMITTED);
         });
+
+        it('updates the original report totals when the workspace chat is missing', async () => {
+            // Given a partially approved report with a held transaction and no locally cached workspace chat.
+            const heldTransaction = {
+                ...buildOptimisticTransaction({
+                    transactionParams: {
+                        amount: 200,
+                        currency: CONST.CURRENCY.USD,
+                        reportID: expenseReport.reportID,
+                    },
+                }),
+                comment: {
+                    hold: 'hold-action',
+                },
+            };
+            const reportWithTotals: Report = {
+                ...expenseReport,
+                total: 900,
+                reimbursableTotal: 900,
+                unheldTotal: 700,
+                unheldReimbursableTotal: 700,
+                nonReimbursableTotal: 0,
+                unheldNonReimbursableTotal: 0,
+            };
+            const apiWriteSpy = jest.spyOn(API, 'write').mockImplementation(() => Promise.resolve());
+
+            await Onyx.set(`${ONYXKEYS.COLLECTION.REPORT}${reportWithTotals.reportID}`, reportWithTotals);
+            await Onyx.set(`${ONYXKEYS.COLLECTION.TRANSACTION}${heldTransaction.transactionID}`, heldTransaction);
+            await waitForBatchedUpdates();
+
+            // When the approver approves only the unheld expenses.
+            approveMoneyRequest({
+                rules: undefined,
+                getCurrencyDecimals: getCurrencyDecimalsLocal,
+                expenseReport: reportWithTotals,
+                expenseReportPolicy: policy,
+                currentUserAccountIDParam: adminAccountID,
+                currentUserEmailParam: adminEmail,
+                hasViolations: false,
+                isASAPSubmitBetaEnabled: false,
+                userBillingGracePeriodEnds: undefined,
+                amountOwed: 0,
+                full: false,
+                ownerBillingGracePeriodEnd: undefined,
+                delegateEmail: undefined,
+                delegateAccountID: undefined,
+                isTrackIntentUser: false,
+                ownerLogin: undefined,
+            });
+
+            // Then the optimistic report total excludes the held transaction and failure data restores the original values.
+            const [, , onyxData] = getRequiredWriteCall(apiWriteSpy.mock.calls);
+            const reportKey = `${ONYXKEYS.COLLECTION.REPORT}${reportWithTotals.reportID}`;
+            const optimisticReportUpdate = getRequiredOnyxUpdate(onyxData, 'optimisticData', reportKey, Onyx.METHOD.MERGE, true);
+            expect(optimisticReportUpdate.value).toEqual(
+                expect.objectContaining({
+                    total: 700,
+                    reimbursableTotal: 700,
+                    nonReimbursableTotal: 0,
+                }),
+            );
+            const failureReportUpdate = getRequiredOnyxUpdate(onyxData, 'failureData', reportKey, Onyx.METHOD.MERGE, true);
+            expect(failureReportUpdate.value).toEqual(
+                expect.objectContaining({
+                    total: 900,
+                    reimbursableTotal: 900,
+                    nonReimbursableTotal: 0,
+                }),
+            );
+        });
     });
 
     describe('getReportOriginalCreationTimestamp', () => {
