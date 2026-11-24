@@ -14,7 +14,7 @@ const isMobileSafariIos26 = isMobileSafariOnIos26();
 
 const BUBBLE_DOMAIN_HEIGHT_SAFARI_26 = 15;
 
-function BaseKeyboardAvoidingView(props: KeyboardAvoidingViewProps) {
+function BaseKeyboardAvoidingView({shouldCorrectRootScreenOffset: _shouldCorrectRootScreenOffset, ...props}: KeyboardAvoidingViewProps) {
     const {behavior, contentContainerStyle, enabled, keyboardVerticalOffset, style, ...rest} = props;
     const sharedValue = useSharedValue(0);
 

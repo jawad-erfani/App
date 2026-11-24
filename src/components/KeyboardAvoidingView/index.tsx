@@ -6,7 +6,12 @@ import type {KeyboardAvoidingViewProps} from './types';
 
 import BaseKeyboardAvoidingView from './BaseKeyboardAvoidingView';
 
-function KeyboardAvoidingView({shouldOffsetBottomSafeAreaPadding = false, keyboardVerticalOffset: keyboardVerticalOffsetProp, ...restProps}: KeyboardAvoidingViewProps) {
+function KeyboardAvoidingView({
+    shouldOffsetBottomSafeAreaPadding = false,
+    shouldCorrectRootScreenOffset,
+    keyboardVerticalOffset: keyboardVerticalOffsetProp,
+    ...restProps
+}: KeyboardAvoidingViewProps) {
     const {paddingBottom} = useSafeAreaPaddings(true);
 
     const keyboardVerticalOffset = (keyboardVerticalOffsetProp ?? 0) + (shouldOffsetBottomSafeAreaPadding ? -paddingBottom : 0);
@@ -15,6 +20,7 @@ function KeyboardAvoidingView({shouldOffsetBottomSafeAreaPadding = false, keyboa
         <BaseKeyboardAvoidingView
             {...restProps}
             keyboardVerticalOffset={keyboardVerticalOffset}
+            shouldCorrectRootScreenOffset={shouldCorrectRootScreenOffset}
         />
     );
 }

@@ -69,6 +69,7 @@ function BaseModal({
     navigationBarTranslucent = true,
     onLayout,
     avoidKeyboard = false,
+    shouldCorrectRootScreenOffset = false,
     children,
     shouldUseCustomBackdrop = false,
     onBackdropPress,
@@ -409,6 +410,7 @@ function BaseModal({
                         navigationBarTranslucent={navigationBarTranslucent}
                         onLayout={onLayout}
                         avoidKeyboard={avoidKeyboard}
+                        shouldCorrectRootScreenOffset={shouldCorrectRootScreenOffset}
                         customBackdrop={shouldUseCustomBackdrop ? <Overlay onPress={handleBackdropPress} /> : undefined}
                         type={type}
                         shouldIgnoreBackHandlerDuringTransition={shouldIgnoreBackHandlerDuringTransition}

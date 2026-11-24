@@ -143,6 +143,7 @@ function FilterPopupButton({
                 <PopoverWithMeasuredContent
                     anchorRef={triggerRef}
                     avoidKeyboard
+                    shouldCorrectRootScreenOffset
                     isVisible={isOverlayVisible}
                     onClose={toggleOverlay}
                     onModalShow={onModalShow}

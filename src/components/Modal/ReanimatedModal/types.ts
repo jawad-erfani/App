@@ -77,6 +77,9 @@ type ReanimatedModalProps = ViewProps &
         /** Whether to avoid keyboard overlap during modal display */
         avoidKeyboard?: boolean;
 
+        /** Correct automatic keyboard avoidance for the Android app window's screen position. */
+        shouldCorrectRootScreenOffset?: boolean;
+
         /** Whether the modal should cover the entire screen */
         coverScreen?: boolean;
 

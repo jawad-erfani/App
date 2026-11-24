@@ -34,6 +34,7 @@ function ReanimatedModal({
     animationIn = 'fadeIn',
     animationOut = 'fadeOut',
     avoidKeyboard = false,
+    shouldCorrectRootScreenOffset = false,
     coverScreen = true,
     children,
     hasBackdrop = true,
@@ -245,6 +246,8 @@ function ReanimatedModal({
                 {avoidKeyboard ? (
                     <KeyboardAvoidingView
                         behavior="padding"
+                        automaticOffset={shouldCorrectRootScreenOffset}
+                        shouldCorrectRootScreenOffset={shouldCorrectRootScreenOffset}
                         pointerEvents="box-none"
                         style={[style, {margin: 0}]}
                     >

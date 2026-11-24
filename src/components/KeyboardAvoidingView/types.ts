@@ -7,8 +7,11 @@ type KeyboardAvoidingViewProps = RNKeyboardAvoidingViewProps & {
      */
     shouldOffsetBottomSafeAreaPadding?: boolean;
 
-    /** Measure the view's screen position to account for modal headers on iOS. */
+    /** Measure the view's screen position when calculating keyboard avoidance. */
     automaticOffset?: boolean;
+
+    /** Correct automatic keyboard avoidance for the Android app window's screen position. */
+    shouldCorrectRootScreenOffset?: boolean;
 };
 
 // eslint-disable-next-line import/prefer-default-export
